@@ -2,14 +2,16 @@
 import os
 import uuid
 
-from flask import app, render_template, request, session
+from flask import Blueprint, render_template, request, session, current_app
 
 from config import ALLOWED_EXTENSIONS
 from werkzeug.utils import secure_filename
 from models.file import allowed_file
 
 
-@app.route('/upload', methods=['GET', 'POST'])
+upload_bp = Blueprint('upload', __name__)
+
+@upload_bp.route('/upload', methods=['GET', 'POST'])
 def upload(): 
     if request.method == 'GET':
         return render_template('upload.html')
@@ -28,7 +30,7 @@ def upload():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename) #make filename safe
         unique_name = str(uuid.uuid4()) + "_" + filename
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name)) #to avoid overwriting files with the same name
+        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], unique_name)) #to avoid overwriting files with the same name, current_app is used to gain access to the active flask application
         return render_template('upload.html', message="File uploaded successfully")
     else:
         return render_template('upload.html', message="Invalid file type. Allowed types are: " + ", ".join(ALLOWED_EXTENSIONS)), 400

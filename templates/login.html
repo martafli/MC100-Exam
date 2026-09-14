@@ -7,7 +7,7 @@
 <body>
     <h1>Login or Register</h1>
 
-    <form action="{{ url_for('login_user') }}" method="POST">
+    <form action="{{ url_for('auth.login_user') }}" method="POST">
         <input type="text" name="username" placeholder="Username" required>
         <br><br>
 
@@ -27,7 +27,7 @@
 
     <br>
 
-    <button class="btn" type="button" onclick="window.location.href='{{ url_for('register') }}';">Register</button>
+    <button class="btn" type="button" onclick="window.location.href='{{ url_for('auth.register') }}'">Register</button>
 
 </body>
 </html>
