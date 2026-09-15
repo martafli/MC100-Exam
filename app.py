@@ -22,6 +22,16 @@ app.register_blueprint(auth_bp) #import the auth blueprint and register it in th
 from controllers.upload_controller import upload_bp
 app.register_blueprint(upload_bp) #import the upload blueprint and register it in the app
 
+import logging
+
+#configure logging
+logging.basicConfig( 
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
+
 if __name__ == '__main__':
     app.run(debug=True)
 

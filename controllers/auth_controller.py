@@ -1,8 +1,13 @@
 
-from flask import Blueprint, app, flash, jsonify, redirect, render_template, request, session, url_for, g
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for, g
 import sqlite3
-from models.user import verify_password, create_user
+from models.user import verify_password, create_user, save_reset_token, token_expired, update_password, invalidate_token, get_user_by_token
 from flask_httpauth import HTTPBasicAuth
+import secrets
+from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 auth = HTTPBasicAuth()
 
@@ -14,7 +19,7 @@ def authenticate(username, password):
         g.user = verify_password(username, password)
         return g.user
     except Exception as e:
-        print(e)
+        logger.error(f"Error during authentication: {e}")
         return None
 
 # API route to get user information
@@ -46,6 +51,7 @@ def register():
 
     username = request.form['username']
     password = request.form['password']
+    logger.info(f"Attempting to register user: {username}")
 
     try:
         create_user(username, password)
@@ -74,3 +80,32 @@ def login_user():
 @auth_bp.route('/')
 def login():
     return render_template('login.html')    
+
+@auth_bp.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'GET':
+        return render_template('forgot_password.html')
+    username = request.form['username']
+    token = secrets.token_urlsafe(32) # Generate a secure token
+    expiration = datetime.now() + timedelta(minutes=10) # Set expiration time to 10 min
+    save_reset_token(username, token, expiration) # Save the token and expiration in the database
+
+    return redirect(url_for('auth.reset_password', token=token))  # Redirect to the reset password page with the token"
+
+@auth_bp.route('/reset_password/<token>', methods=['GET', 'POST']) 
+def reset_password(token):
+
+    user = get_user_by_token(token)
+    if not user:
+        return "Invalid token"
+    elif token_expired(user):
+        return "Token has expired"
+
+    if request.method == 'GET':
+            return render_template('reset_password.html')
+    
+    new_password = request.form['password']
+    update_password(user[0], new_password)  # Update the password in the database
+    invalidate_token(user[0])  # Invalidate the token after use
+    flash ("Password reset successful!") #display message on login page
+    return redirect(url_for('auth.login'))  
