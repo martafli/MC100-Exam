@@ -8,7 +8,7 @@ from config import ALLOWED_EXTENSIONS
 from werkzeug.utils import secure_filename
 from models.file import allowed_file, get_file, save_file_metadata
 import logging
-from models.file import get_file_by_user
+from models.file import get_files_by_user
 
 logger = logging.getLogger(__name__)
 upload_bp = Blueprint('upload', __name__)
@@ -18,7 +18,7 @@ def upload():
     if request.method == 'GET':
         return render_template('upload.html')
 
-    if 'user' not in session: #check if the user is authenticated, unauthenticated users will not have the role 'user'
+    if 'user' not in session: #check if the user is authenticated, unauthenticated users are not allowed to upload files
         return "Unauthorized", 401
     
     if 'file' not in request.files:
@@ -98,5 +98,5 @@ def user_files():
         logger.error("Unauthorized access to user files")
         return "Unauthorized", 401
 
-    files = get_file_by_user(session['user'])
+    files = get_files_by_user(session['user'])
     return render_template('user_files.html', files=files)

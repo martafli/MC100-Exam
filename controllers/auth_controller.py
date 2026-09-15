@@ -1,7 +1,7 @@
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for, g
 import sqlite3
-from models.file import get_file_by_user
+from models.file import get_files_by_user
 from models.user import verify_password, create_user, save_reset_token, token_expired, update_password, invalidate_token, get_user_by_token
 from flask_httpauth import HTTPBasicAuth
 import secrets
@@ -43,7 +43,7 @@ def admin():
 @auth.login_required
 def get_files():
     user = g.user
-    files = get_file_by_user(user[1])
+    files = get_files_by_user(user[1])
 
     return jsonify({
     'from user': user[1],
@@ -109,8 +109,10 @@ def reset_password(token):
 
     user = get_user_by_token(token)
     if not user:
+        logger.error(f"Invalid token attempt: {token}")
         return "Invalid token"
     elif token_expired(user):
+        logger.error(f"Expired token attempt for user {user[1]}: {token}")
         return "Token has expired"
 
     if request.method == 'GET':
@@ -119,6 +121,6 @@ def reset_password(token):
     new_password = request.form['password']
     update_password(user[0], new_password)  # Update the password in the database
     logger.info(f"Password updated for user with id {user[0]}")
-    invalidate_token(user[0])  # Invalidate the token after use
+    invalidate_token(user[1])  # Invalidate the token after use
     flash ("Password reset successful!") #display message on login page
     return redirect(url_for('auth.login'))  

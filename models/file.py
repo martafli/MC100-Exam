@@ -62,7 +62,7 @@ def get_file(file_id):
     return file
 
 
-def get_file_by_user(username):
+def get_files_by_user(username):
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
