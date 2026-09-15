@@ -18,10 +18,11 @@ def create_user(username, password):
         cursor = conn.cursor()
         cursor.execute('INSERT INTO users (username, password, token) VALUES (?, ?, ?)', (username, hashed_password, token))
         conn.commit()
+        logger.info(f"User {username} successfully created")
     except Exception as e:
         logger.error(f"Error creating user {username}: {e}")
+        raise #raise the exception to be handled by the calling function
     finally:
-        logger.info(f"User {username} successfully created")
         conn.close()
 
 
@@ -33,14 +34,17 @@ def verify_password(username, password):
         cursor.execute(
             'SELECT * FROM users WHERE username=?', (username,)
             )
-        user = cursor.fetchone()
-        conn.close()                                                    
+        user = cursor.fetchone()                                                   
     except Exception as e:
-        logger.error(f"Error verifying password for user {username}: {e}")
+        logger.error(f"Error retrieving user {username}: {e}")
+        raise
+    finally:
+        conn.close() 
 
     if user and bcrypt.checkpw(password.encode('utf-8'), user[2].encode('utf-8')):
         logger.info(f"Password verified for user: {username}")
         return user
+    logger.info(f"Password verification failed for user: {username}")
     return None
 
 # Hash a password
@@ -56,10 +60,11 @@ def save_reset_token(username, token, expiration):
         cursor = conn.cursor()
         cursor.execute('UPDATE users SET reset_token=?, reset_token_expiration=? WHERE username=?', (token, expiration.isoformat(), username))
         conn.commit()
+        logger.info(f"Reset token saved for user {username} with expiration {expiration.isoformat()}")
     except Exception as e:
         logger.error(f"Error saving reset token for user {username}: {e}")
+        raise
     finally:
-        logger.info(f"Reset token saved for user {username} with expiration {expiration.isoformat()}")
         conn.close()
 
 
@@ -74,10 +79,11 @@ def update_password(id, new_password):
         cursor = conn.cursor()
         cursor.execute('UPDATE users SET password=? WHERE id=?', (hashed_pass, id))
         conn.commit()
+        logger.info(f"Password updated for user with id {id}")
     except Exception as e:
         logger.error(f"Error updating password for user with id {id}: {e}")
+        raise
     finally:
-        logger.info(f"Password updated for user with id {id}")
         conn.close()
 
 
@@ -87,10 +93,11 @@ def invalidate_token(username):
         cursor = conn.cursor()
         cursor.execute('UPDATE users SET reset_token=NULL, reset_token_expiration=NULL WHERE username=?', (username,))
         conn.commit()
+        logger.info(f"Reset token sucessfully invalidated for user {username}")
     except Exception as e:
         logger.error(f"Error invalidating token for user {username}: {e}")
+        raise
     finally:
-        logger.info(f"Reset token sucessfully invalidated for user {username}")
         conn.close()
 
 
@@ -100,9 +107,10 @@ def get_user_by_token(token):
         cursor = conn.cursor() #create a cursor object to execute SQL queries
         cursor.execute('SELECT * FROM users WHERE reset_token=?', (token,)) #use reset token to select user
         user = cursor.fetchone() #retrieve the first row of the result set
+        logger.info(f"User retrieved by token")
     except Exception as e:
         logger.error(f"Error retrieving user by token")
+        raise
     finally:
         conn.close() #close the database connection
-    logger.info(f"User retrieved by token")
     return user

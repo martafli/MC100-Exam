@@ -34,5 +34,6 @@ def init_db():
         conn.commit()
     except Exception as e:
         logger.error(f"Error initializing database: {e}")
+        raise
     finally:
         conn.close()

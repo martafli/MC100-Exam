@@ -36,6 +36,7 @@ def save_file_metadata(username, original_filename, stored_filename): #save the 
         conn.commit()
     except Exception as e:
         logger.error(f"Error saving file metadata: {e}")
+        raise
     finally:
         conn.close()
 
@@ -55,26 +56,7 @@ def get_file(file_id):
         file = cursor.fetchone()
     except Exception as e:
         logger.error(f"Error retrieving file: {e}")
-    finally:
-        conn.close()
-    return file
-
-
-def get_file(file_id):
-    try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT *
-            FROM files
-            WHERE id=?
-            """,
-            (file_id,)
-        )
-        file = cursor.fetchone()
-    except Exception as e:
-        logger.error(f"Error retrieving file: {e}")
+        raise
     finally:
         conn.close()
     return file
@@ -95,6 +77,7 @@ def get_file_by_user(username):
         files = cursor.fetchall() #fetches all files associated with the given username
     except Exception as e:
         logger.error(f"Error retrieving user files: {e}")
+        raise
     finally:
         conn.close()
     return files

@@ -8,6 +8,7 @@ from config import ALLOWED_EXTENSIONS
 from werkzeug.utils import secure_filename
 from models.file import allowed_file, get_file, save_file_metadata
 import logging
+from models.file import get_file_by_user
 
 logger = logging.getLogger(__name__)
 upload_bp = Blueprint('upload', __name__)
@@ -38,7 +39,9 @@ def upload():
         unique_name = str(uuid.uuid4()) + "_" + filename
 
         try:
-            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], unique_name)) #to avoid overwriting files with the same name, current_app is used to gain access to the active flask application
+            path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_name)
+            file.save(path) #to avoid overwriting files with the same name, current_app is used to gain access to the active flask application
+            logger.info(f"Saving file to: {path}")
         except Exception as e:
             logger.error(f"Error saving file: {e}")
             flash (f"An error occurred while saving the file: {e}")
@@ -70,10 +73,30 @@ def download(file_id):
         logger.error(f"User {session['user']} attempted to download file {file[2]} owned by {file[1]}")
         return "Forbidden", 403
     
-    logger.info(f"User {session['user']} downloaded file {file[2]} with id {file_id}")
-    return send_from_directory(
-        current_app.config['UPLOAD_FOLDER'],
-        file[3],
-        as_attachment=True,
-        download_name=file[2]
-    )
+    
+    try:
+        logger.info(f"User is downloading file {file[2]} with stored name {file[3]}")
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'],file[3])
+
+        logger.info(f"Looking for file at: {filepath}")
+        logger.info(f"Exists: {os.path.exists(filepath)}")
+        return send_from_directory(
+            current_app.config['UPLOAD_FOLDER'],
+            file[3],
+            as_attachment=True,
+            download_name=file[2]
+        )
+    
+    except Exception as e:
+        logger.error(f"Download error: {e}")
+        return str(e), 500
+    
+
+@upload_bp.route('/user_files')
+def user_files():
+    if 'user' not in session:
+        logger.error("Unauthorized access to user files")
+        return "Unauthorized", 401
+
+    files = get_file_by_user(session['user'])
+    return render_template('user_files.html', files=files)
