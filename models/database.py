@@ -17,7 +17,7 @@ def init_db():
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 token TEXT,
-                Role TEXT DEFAULT 'user',
+                Role TEXT DEFAULT 'student',
                 reset_token TEXT,
                 reset_token_expiration TEXT
             )

@@ -28,16 +28,16 @@ def authenticate(username, password):
 @auth.login_required
 def get_user_info():
     user = g.user
-    return jsonify({'id': user[0], 'username': user[1]})
+    return jsonify({'id': user[0], 'username': user[1], 'role': user[4]})
 
-@auth_bp.route('/api/admin')
+@auth_bp.route('/api/teacher')
 @auth.login_required
-def admin():
+def teacher():
     user = g.user
-    if user[4] == 'admin':
-        return jsonify({'message': 'Welcome, admin!'})
+    if user[4] == 'teacher':
+        return jsonify({'message': 'Welcome, teacher!'})
     else:
-        return jsonify({'message': 'Access denied. Admins only.'}), 403
+        return jsonify({'message': 'Access denied. Teachers only.'}), 403
 
 @auth_bp.route('/api/files')
 @auth.login_required

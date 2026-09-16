@@ -50,8 +50,7 @@ def upload():
         save_file_metadata(session['user'], filename, unique_name) #save metadata of the file in database
         logger.info(f"File {filename} uploaded successfully by user {session['user']}")
 
-        flash("File uploaded successfully")
-        return render_template('upload.html')
+        return render_template('upload.html', message="File uploaded successfully!")
     else:
         logger.error(f"User attempted to upload invalid file: {file.filename}")
         return render_template('upload.html', message="Invalid file type. Allowed types are: " + ", ".join(ALLOWED_EXTENSIONS)), 400
