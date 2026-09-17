@@ -81,7 +81,7 @@ def save_reset_token(username, token, expiration):
 
 
 def token_expired(user):
-    expired = datetime.fromisoformat(user[6])
+    expired = datetime.fromisoformat(user[5])
     return datetime.now() > expired
 
 def update_password(id, new_password):

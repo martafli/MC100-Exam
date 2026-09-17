@@ -28,13 +28,13 @@ def authenticate(username, password):
 @auth.login_required
 def get_user_info():
     user = g.user
-    return jsonify({'id': user[0], 'username': user[1], 'role': user[4]})
+    return jsonify({'id': user[0], 'username': user[1], 'role': user[3]})
 
 @auth_bp.route('/api/teacher')
 @auth.login_required
 def teacher():
     user = g.user
-    if user[4] == 'teacher':
+    if user[3] == 'teacher':
         return jsonify({'message': 'Welcome, teacher!'})
     else:
         return jsonify({'message': 'Access denied. Teachers only.'}), 403
@@ -97,8 +97,6 @@ def login_user():
 
 @auth_bp.route('/')
 def login():
-    if 'user' in session:
-        return redirect(url_for('upload.upload'))
     return render_template('login.html')    
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])
