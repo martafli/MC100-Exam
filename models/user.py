@@ -23,13 +23,12 @@ def is_valid_name_input(username):
 # Create a new user
 def create_user(username, password):
     hashed_password = hash_password(password)
-    token = str(uuid.uuid4())
     
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO users (username, password, token) VALUES (?, ?, ?)', 
-                       (username, hashed_password, token))
+        cursor.execute('INSERT INTO users (username, password) VALUES (?, ?)', 
+                       (username, hashed_password))
         conn.commit()
         logger.info(f"User {username} successfully created")
     except sqlite3.Error as e:

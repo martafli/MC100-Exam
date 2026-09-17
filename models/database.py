@@ -16,7 +16,6 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                token TEXT,
                 Role TEXT DEFAULT 'student',
                 reset_token TEXT,
                 reset_token_expiration TEXT
