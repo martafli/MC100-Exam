@@ -5,9 +5,15 @@
 </head>
 <body>
     <h1>
-        Upload your file here:
+        Welcome {{ session['user'] }}, upload your file here:
     </h1>
-    <p>{{ message }}</p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
     <form action="{{ url_for('upload.upload') }}" method="POST" enctype="multipart/form-data">
         <input type="file" name="file" required>

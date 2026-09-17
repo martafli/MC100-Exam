@@ -2,7 +2,7 @@
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for, g
 import sqlite3
 from models.file import get_files_by_user
-from models.user import verify_password, create_user, save_reset_token, token_expired, update_password, invalidate_token, get_user_by_token
+from models.user import is_valid_name_input, verify_password, create_user, save_reset_token, token_expired, update_password, invalidate_token, get_user_by_token
 from flask_httpauth import HTTPBasicAuth
 import secrets
 from datetime import datetime, timedelta
@@ -34,10 +34,22 @@ def get_user_info():
 @auth.login_required
 def teacher():
     user = g.user
-    if user[4] == 'teacher':
+    if user[4] == 'teacher' or user[4] == 'admin':
         return jsonify({'message': 'Welcome, teacher!'})
     else:
         return jsonify({'message': 'Access denied. Teachers only.'}), 403
+
+# @auth_bp.route('/api/admin')
+# @auth.login_required
+# def admin():
+#     current_user = g.user
+#     if current_user[4] != 'admin':
+#         return jsonify({'error': 'Access denied'}), 403
+
+#     users = get_all_users()
+#     for user in users:
+#         return jsonify([{'id': user[0], 'username': user[1], 'role': user[2]}])
+        
 
 @auth_bp.route('/api/files')
 @auth.login_required
@@ -64,6 +76,11 @@ def register():
     username = request.form['username']
     password = request.form['password']
     logger.info(f"Attempting to register user: {username}")
+    
+    if not is_valid_name_input(username): #prevent cross site scripting attacks by validating the username input to ensure it only contains valid characters 
+        logger.warning(f"Invalid username attempt: {username}")
+        flash("Invalid username. Please use 4-20 characters, letters, numbers, underscores, or hyphens.")
+        return render_template('register.html')
 
     try:
         create_user(username, password)
@@ -91,6 +108,8 @@ def login_user():
 
 @auth_bp.route('/')
 def login():
+    if 'user' in session:
+        return redirect(url_for('upload.upload'))
     return render_template('login.html')    
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])

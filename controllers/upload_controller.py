@@ -15,11 +15,11 @@ upload_bp = Blueprint('upload', __name__)
 
 @upload_bp.route('/upload', methods=['GET', 'POST'])
 def upload(): 
+    if 'user' not in session: #check if the user is authenticated, unauthenticated users are not allowed to upload files
+            return "Unauthorized", 401
+    
     if request.method == 'GET':
         return render_template('upload.html')
-
-    if 'user' not in session: #check if the user is authenticated, unauthenticated users are not allowed to upload files
-        return "Unauthorized", 401
     
     if 'file' not in request.files:
         logger.error("No file part in the request")
@@ -50,7 +50,8 @@ def upload():
         save_file_metadata(session['user'], filename, unique_name) #save metadata of the file in database
         logger.info(f"File {filename} uploaded successfully by user {session['user']}")
 
-        return render_template('upload.html', message="File uploaded successfully!")
+        flash("File uploaded successfully")
+        return render_template('upload.html')
     else:
         logger.error(f"User attempted to upload invalid file: {file.filename}")
         return render_template('upload.html', message="Invalid file type. Allowed types are: " + ", ".join(ALLOWED_EXTENSIONS)), 400
