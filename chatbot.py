@@ -33,7 +33,7 @@ def chatbot(message):
     if not validate_input(message):
         logger.warning("Invalid input received for chatbot.")
         return "Invalid input."
-
+    
     try:
         response = client.chat.completions.create(
             model="openrouter/free",
@@ -67,6 +67,11 @@ def chatbot(message):
         return "The chatbot service is currently unavailable."
 
 
+role = input("Enter your role (teacher/student): ").strip().lower()
+if role != 'teacher':
+    logger.warning(f"Access denied for role: {role}")
+    print("Access denied. Only teachers can use the chatbot.")
+    exit()
 message = input("You: ")
 response = chatbot(message)
 

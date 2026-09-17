@@ -34,21 +34,10 @@ def get_user_info():
 @auth.login_required
 def teacher():
     user = g.user
-    if user[4] == 'teacher' or user[4] == 'admin':
+    if user[4] == 'teacher':
         return jsonify({'message': 'Welcome, teacher!'})
     else:
         return jsonify({'message': 'Access denied. Teachers only.'}), 403
-
-# @auth_bp.route('/api/admin')
-# @auth.login_required
-# def admin():
-#     current_user = g.user
-#     if current_user[4] != 'admin':
-#         return jsonify({'error': 'Access denied'}), 403
-
-#     users = get_all_users()
-#     for user in users:
-#         return jsonify([{'id': user[0], 'username': user[1], 'role': user[2]}])
         
 
 @auth_bp.route('/api/files')

@@ -127,19 +127,3 @@ def get_user_by_token(token):
     finally:
         conn.close() #close the database connection
     return user
-
-# def get_all_users():
-#     logger.info("Retrieving all users from the database")
-#     try:
-#         conn = sqlite3.connect(DATABASE)
-#         cursor = conn.cursor()
-#         cursor.execute(
-#             "SELECT id, username, Role FROM users"
-#         )
-#         users = cursor.fetchall()
-#     except sqlite3.Error as e:
-#         logger.error(f"Error retrieving users: {e}")
-#         raise
-#     finally:
-#         conn.close()
-#     return users
